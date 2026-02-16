@@ -1,88 +1,209 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KlypoChat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      margin:0;
-      background:#000;
-      color:#fff;
-      font-family: 'Helvetica Neue', sans-serif;
-      text-align:center;
-      overflow:hidden;
-      position:relative;
+      background: #000;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      position: relative;
     }
-    #sphere {
-      position:fixed;
-      top:-150px;
-      left:-150px;
-      width:300px;
-      height:300px;
-      border-radius:50%;
-      background: radial-gradient(circle, #ff0066, transparent);
-      opacity:0.2;
-      filter:blur(80px);
-      z-index:1;
+    #glow {
+      position: absolute;
+      top: -20%;
+      left: -20%;
+      width: 140%;
+      height: 140%;
+      background: radial-gradient(circle at 30% 30%, #ff0066 0%, #ff3a9d 20%, transparent 60%);
+      opacity: 0.15;
+      filter: blur(100px);
+      animation: float 6s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(10px, -15px) scale(1.1); }
+    }
+    .logo {
+      position: absolute;
+      top: 10vh;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 6rem;
+      font-weight: 300;
+      letter-spacing: 1.5rem;
+      text-shadow: 0 0 40px #ff0066, 0 0 60px rgba(255,0,102,0.5);
+      z-index: 2;
       animation: pulse 3s infinite alternate;
     }
     @keyframes pulse {
-      from { transform:scale(1); }
-      to { transform:scale(1.3); }
+      0% { opacity: 1; text-shadow: 0 0 40px #ff0066; }
+      100% { opacity: 0.9; text-shadow: 0 0 70px #ff0066; }
     }
-    .container {
-      z-index:2;
-      height:100vh;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      gap:2rem;
+    .btn-group {
+      position: absolute;
+      bottom: 30vh;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      z-index: 2;
     }
-    h1 {
-      font-size:4rem;
-      font-weight:300;
-      letter-spacing:1rem;
-      text-shadow: 0 0 20px #ff0066;
+    .btn {
+      width: 280px;
+      padding: 1.4rem 0;
+      font-size: 1.6rem;
+      font-weight: 600;
+      background: transparent;
+      border: 3px solid #ff0066;
+      color: #ff0066;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      box-shadow: 0 0 20px rgba(255,0,102,0.2);
+      position: relative;
+      overflow: hidden;
     }
-    button {
-      margin:0.5rem;
-      padding:1.2rem 2.5rem;
-      font-size:1.5rem;
-      background:transparent;
-      border:2px solid #ff0066;
-      color:#ff0066;
-      border-radius:50px;
-      cursor:pointer;
-      transition:all 0.3s;
-      font-weight:500;
-      letter-spacing:1px;
-      position:relative;
-      overflow:hidden;
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.4s;
     }
-    button:hover {
-      background:#ff0066;
-      color:white;
-      box-shadow: 0 0 50px rgba(255,0,102,0.6);
+    .btn:hover {
+      background: #ff0066;
+      color: white;
+      box-shadow: 0 0 60px rgba(255,0,102,0.6);
+      transform: translateY(-3px);
     }
-    button::before {
-      content:"";
-      position:absolute;
-      top:0; left:-100%;
-      width:100%; height:100%;
-      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      transition:0.3s;
+    .btn:hover::before {
+      left: 100%;
     }
-    button:hover::before {
-      left:100%;
+    .btn:active {
+      transform: translateY(0);
     }
+    #videoCall, #textChat {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      z-index: 3;
+    }
+    #localVideo, #remoteVideo {
+      width: 50%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      border: none;
+    }
+    #localVideo { left: 0; }
+    #remoteVideo { right: 0; }
+    #controlBar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0,0,0,0.8);
+      padding: 1rem 0;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+    #chatOutput {
+      height: 70vh;
+      overflow-y: auto;
+      padding: 2rem;
+      font-size: 1.3rem;
+      background: #111;
+    }
+    .msg {
+      margin: 0.8rem 0;
+      padding: 0.8rem 1.2rem;
+      border-radius: 20px;
+      max-width: 70%;
+      word-wrap: break-word;
+      animation: slideIn 0.3s ease-out;
+    }
+    .msg.you { background: #ff0066; color: white; align-self: flex-end; }
+    .msg.stranger { background: #333; color: #ddd; align-self: flex-start; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .chat-input {
+      position: absolute;
+      bottom: 8vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      display: flex;
+      gap: 1rem;
+      z-index: 4;
+    }
+    #chatInput {
+      flex: 1;
+      padding: 1.2rem 1.5rem;
+      border: none;
+      border-radius: 30px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 1.1rem;
+      backdrop-filter: blur(10px);
+    }
+    #chatInput::placeholder { color: #aaa; }
+    #chatInput:focus { outline: none; background: rgba(255,255,255,0.2); }
+    .chat-btn {
+      padding: 1.2rem 2rem;
+      border: none;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    #sendBtn { background: #ff0066; color: white; }
+    #leaveBtn { background: #00ff66; color: black; }
+    .btn:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
-  <div id="sphere"></div>
-  <div class="container">
-    <h1>KlypoChat</h1>
-    <button onclick="startVideo()">Video Call</button>
-    <button onclick="startText()">Text Chat</button>
+  <div id="glow"></div>
+  <h1 class="logo">KLYPOCHAT</h1>
+  <div class="btn-group">
+    <button class="btn" onclick="startVideo()">Video Call</button>
+    <button class="btn" onclick="startText()">Text Chat</button>
+  </div>
+
+  <div id="videoCall">
+    <video id="localVideo" autoplay playsinline muted></video>
+    <video id="remoteVideo" autoplay playsinline></video>
+    <div id="controlBar">
+      <button class="btn" onclick="startRecord()">Record</button>
+      <button class="btn" onclick="hangUp()">Hang Up</button>
+    </div>
+  </div>
+
+  <div id="textChat">
+    <div id="chatOutput"></div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="Say something..." onkeypress="if(event.keyCode===13) sendText()">
+      <button id="sendBtn" class="chat-btn" onclick="sendText()">Send</button>
+      <button id="leaveBtn" class="chat-btn" onclick="leaveText()">Leave</button>
+    </div>
   </div>
 
   <script src="app.js"></script>
