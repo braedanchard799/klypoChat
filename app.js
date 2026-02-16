@@ -1,7 +1,13 @@
 function startVideo() {
-  alert("Connecting to a stranger...");
+  const sound = document.getElementById('clickSound');
+  sound.currentTime = 0;
+  sound.play();
+  window.location.href = '/video';
 }
 
 function startText() {
-  alert("Text chat coming soon.");
+  const sound = document.getElementById('clickSound');
+  sound.currentTime = 0;
+  sound.play();
+  window.location.href = '/text';
 }
